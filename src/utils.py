@@ -262,8 +262,8 @@ def create_bcl_convert_params(file_path, env_vars, input_dir, fastq_output_dir, 
 def get_bcl_convert_vars(env_vars, sample_sheet, flow_cell):
     bcl_convert_vars = env_vars.copy()
     override_cycles = sample_sheet['override_cycles'][0]
-    read_cycles = re.findall("Y\d+", override_cycles)
-    index_cycles = re.findall("[I|U]\d+", override_cycles)
+    read_cycles = re.findall(r"Y\d+", override_cycles)
+    index_cycles = re.findall(r"[I|U]\d+", override_cycles)
 
     bcl_convert_vars['run_name'] = flow_cell
     bcl_convert_vars['instrument_platform'] = sample_sheet['instrument_platform'][0]
@@ -278,8 +278,8 @@ def get_bcl_convert_vars(env_vars, sample_sheet, flow_cell):
     return bcl_convert_vars
 
 def add_lane_to_fastq(file_name):
-    if not re.match("^.*L\d{3}.*$", file_name):
-        split = re.split("(S\d+)", file_name)
+    if not re.match(r"^.*L\d{3}.*$", file_name):
+        split = re.split(r"(S\d+)", file_name)
         return ''.join(split[:2]) + '_L001' + split[2]
     return file_name
 

@@ -236,8 +236,10 @@ def upload_cumulus_samplesheet(buckets, directories, sample_dicts, sample_tracki
             .replace('{output_directory}', "%s/" % resultsbucket) \
             .replace('{output_name}', sampleid) \
             .replace('"{min_umis}"', str(cumulusdict[sampleid][0])) \
-            .replace('"{min_genes}"', str(cumulusdict[sampleid][1])) \
-            .replace('"{percent_mito}"', str(cumulusdict[sampleid][2]))
+            .replace('"{max_umis}"', str(cumulusdict[sampleid][1])) \
+            .replace('"{min_genes}"', str(cumulusdict[sampleid][2])) \
+            .replace('"{max_genes}"', str(cumulusdict[sampleid][3])) \
+            .replace('"{percent_mito}"', str(cumulusdict[sampleid][4]))
 
         with open(input_cumulus_file, "w") as f:
             f.write(template)
@@ -374,8 +376,10 @@ def upload_post_cellbender_cumulus_input(buckets, directories, sample_dicts, sam
             .replace('{output_directory}', "%s/" % cellbender_resultsbucket) \
             .replace('{output_name}', sampleid) \
             .replace('"{min_umis}"', str(cumulusdict[sampleid][0])) \
-            .replace('"{min_genes}"', str(cumulusdict[sampleid][1])) \
-            .replace('"{percent_mito}"', str(cumulusdict[sampleid][2])) \
+            .replace('"{max_umis}"', str(cumulusdict[sampleid][1])) \
+            .replace('"{min_genes}"', str(cumulusdict[sampleid][2])) \
+            .replace('"{max_genes}"', str(cumulusdict[sampleid][3])) \
+            .replace('"{percent_mito}"', str(cumulusdict[sampleid][4]))
 
         with open(input_cellbender_cumulus_file, "w") as f:
             f.write(template)

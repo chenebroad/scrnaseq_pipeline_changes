@@ -68,7 +68,7 @@ sample_sheet_columns = [
     'date', 'run_pipeline', 'Channel Name', 'Sample', 'sampleid', 'method', 'sub_method',
     'condition', 'replicate', 'tissue', 'Lane', 'Index', 'instrument_platform', 'instrument_type',
     'create_fastq_for_index_reads', 'trim_umi', 'override_cycles', 'project', 'reference',
-    'introns', 'chemistry', 'flowcell', 'seq_dir', 'min_umis', 'min_genes', 'percent_mito', 
+    'introns', 'chemistry', 'flowcell', 'seq_dir', 'min_umis', 'max_umis', 'min_genes', 'max_genes', 'percent_mito', 
     'cellbender_expected_cells', 'cellbender_total_droplets_included', 'cellbender_learning_rate',
     'cellbender_force_cell_umi_prior', 'cellbender_force_empty_umi_prior'
 ]

@@ -174,8 +174,8 @@ def upload_cellranger_count_input(buckets, directories, sample_dicts, sample_tra
             f.write("\t\"cellranger_workflow.run_mkfastq\" : false,\n")
             f.write("\t\"cellranger_workflow.run_count\" : true,\n")
             f.write("\t\"cellranger_workflow.mkfastq_docker_registry\" : \"gcr.io/microbiome-xavier\",\n")
-            f.write("\t\"cellranger_workflow.include_introns\" : %s\n" % str(cellranger_dict[sample_id][0]).lower())
-            f.write("\t\"cellranger_workflow.zones\" : \"us-central1-a\",\n")
+            f.write("\t\"cellranger_workflow.include_introns\" : %s,\n" % str(cellranger_dict[sample_id][0]).lower())
+            f.write("\t\"cellranger_workflow.zones\" : \"us-central1-a\"\n")
             f.write("}\n")
 
     logging.info("STEP 3 | Upload cellranger samplesheet and input file to Google Cloud Storage Bucket. ")

@@ -25,5 +25,6 @@
   "cumulus.umap_min_dist": 0.5,
   "cumulus.umap_spread": 1,
   "cumulus.plot_umap": "leiden_labels",
-  "cumulus.output_h5ad": true
+  "cumulus.output_h5ad": true,
+  "cumulus.zones": "us-central1-a"
 }

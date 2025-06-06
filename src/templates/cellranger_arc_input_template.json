@@ -8,6 +8,7 @@
   "cellranger_workflow.run_count": "{run_count}",
   "cellranger_workflow.run_mkfastq": "{run_mkfastq}",
   "cellranger_workflow.mkfastq_disk_space" : "{mkfastq_disk_space}",
-  "cellranger_workflow.memory": "{memory}"
+  "cellranger_workflow.memory": "{memory}",
+  "cellranger_workflow.zones": "us-central1-a"
 }
 

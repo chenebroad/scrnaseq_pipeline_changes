@@ -8,5 +8,6 @@
   "cellbender_remove_background.run_cellbender_remove_background_gpu.input_10x_h5_file_or_mtx_directory": "{input_dir}",
   "cellbender_remove_background.run_cellbender_remove_background_gpu.output_directory": "{output_dir}",
   "cellbender_remove_background.run_cellbender_remove_background_gpu.learning_rate": 0.00005,
-  "cellbender_remove_background.run_cellbender_remove_background_gpu.fpr": "0.01 0.05 0.1"
+  "cellbender_remove_background.run_cellbender_remove_background_gpu.fpr": "0.01 0.05 0.1",
+  "cellbender_remove_background.run_cellbender_remove_background_gpu.hardware_zones": "us-central1-a"
 }

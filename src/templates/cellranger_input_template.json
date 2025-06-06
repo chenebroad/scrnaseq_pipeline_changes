@@ -5,5 +5,6 @@
   "cellranger_workflow.run_mkfastq": false,
   "cellranger_workflow.run_count": false,
   "cellranger_workflow.mkfastq_docker_registry": "gcr.io/microbiome-xavier",
-  "cellranger_workflow.include_introns": "{include_introns}"
+  "cellranger_workflow.include_introns": "{include_introns}",
+  "cellranger_workflow.zones": "us-central1-a"
 }

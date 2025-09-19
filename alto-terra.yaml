@@ -1,0 +1,17 @@
+name: alto-terra
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.10
+  - pip=24.2         # Known good pip release, fixes resolvelib mismatch
+  - setuptools<58.3  # Keeps firecloud happy
+  - wheel
+  - firecloud=0.16.38  # Bioconda build (no setuptools issues)
+  - google-cloud-sdk   # Optional: gcloud + gsutil for Terra
+  - gcsfs
+  - requests          # firecloud dependency, pinned here to avoid conflicts
+  - pyopenssl<24.0    # prevent clobber with firecloud’s deps
+  - pip:
+      - altocumulus==2.3.0

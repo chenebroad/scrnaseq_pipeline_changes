@@ -1,0 +1,11 @@
+{
+    "cellbender_remove_background.run_cellbender_remove_background_gpu.fpr": "0.01",
+    "cellbender_remove_background.run_cellbender_remove_background_gpu.input_file_unfiltered": "{raw_feature_matrix_h5}",
+    "cellbender_remove_background.run_cellbender_remove_background_gpu.docker_image": "us.gcr.io/broad-dsde-methods/cellbender:0.3.0",
+    "cellbender_remove_background.run_cellbender_remove_background_gpu.sample_name": "{sample}",
+    "cellbender_remove_background.run_cellbender_remove_background_gpu.epochs": "150",
+    "cellbender_remove_background.run_cellbender_remove_background_gpu.hardware_preemptible_tries": "0",
+    "cellbender_remove_background.run_cellbender_remove_background_gpu.z_dim": "100",
+    "cellbender_remove_background.run_cellbender_remove_background_gpu.learning_rate": "0.00005",
+    "cellbender_remove_background.run_cellbender_remove_background_gpu.output_bucket_base_directory": "{output}"
+}

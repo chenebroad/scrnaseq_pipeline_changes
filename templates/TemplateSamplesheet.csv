@@ -1,0 +1,8 @@
+[Header],
+FileFormatVersion,2
+,
+[BCLConvert_Settings],
+CreateFastqForIndexReads,1
+SoftwareVersion,4.2.7
+,
+[BCLConvert_Data],

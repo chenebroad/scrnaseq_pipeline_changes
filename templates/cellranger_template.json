@@ -1,0 +1,10 @@
+{
+    "cellranger_workflow.zones": "us-central1-c",
+    "cellranger_workflow.input_csv_file": "${inputLoc}",
+    "cellranger_workflow.cellranger_arc_version": "2.0.2.custom-max-cell",
+    "cellranger_workflow.docker_registry": "quay.io/cumulus",
+    "cellranger_workflow.cellranger_version": "9.0.1",
+    "cellranger_workflow.memory": "240G",
+    "cellranger_workflow.output_directory": "${outputLoc}",
+    "cellranger_workflow.include_introns": "${intronsStatus}"
+}

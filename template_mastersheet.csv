@@ -1,0 +1,1 @@
+﻿date,run_pipeline,sampleid,condition,replicate,tissue,Lane,SI_Index,index1,index2,project,project_orig,method,submethod,reference,chemistry,flowcell,seq_dir,min_umis,min_genes,percent_mito,cellbender_expected_cells,cellbender_total_droplets_included,focus,append,calc_signature_scores,introns

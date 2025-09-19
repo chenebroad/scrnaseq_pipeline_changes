@@ -1,4 +1,4 @@
-This is rewrite for the original scRNA pipeline constructed by Daniel Chafamo, with a less reliance on provisioning virtual machines and a goal of removing reliance on the dsub due to changes in Google Batch / Life Sciences API.
+This is rewrite for the original scRNA pipeline constructed by Daniel Chafamo, with a less reliance on provisioning virtual machines and a goal of removing reliance on dsub due to changes in Google Batch / Life Sciences API which have made maintaining the original pipeline a little more challenging.
 
 The main script allows for the creation and upload of inputs to the corresponding Terra workspace for single cell processing. 
 

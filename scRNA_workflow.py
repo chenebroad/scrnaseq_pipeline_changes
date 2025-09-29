@@ -527,7 +527,7 @@ if __name__ == "__main__":
         print(f"Counts modality: {args.modality}")
         countsSamplesLocation= createCountsSheet(args.modality, args.submit)
         jsonGen = configSetupCounts(countsMode=args.modality,
-                                    intronStatus = "false",
+                                    intronStatus = args.intron,
                                     countsSampleSheetPath=countsSamplesLocation)
 
     elif args.step == "cellbender":

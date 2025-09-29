@@ -106,6 +106,12 @@ def preRunCheck():
         os.mkdir(f"./samplesheets/{setDate}")    
 
 def convertSIToIndex(runDataFrame, indexDict=mergedIndexJson, reverseComplementSeq=False):
+    '''
+    runDataFrame - Samplesheet that is being processed and read in by the gexAtacSplit() function
+    indexDict - the pre-created index dictionary from 10X
+    reverseComplementSeq - the deciding factor for whether the other index will be used for RNA/GEX workflows
+    '''
+    
     def extractIndex(si_index, key=None):
         entry = indexDict.get(si_index)
         if entry is None:
@@ -146,7 +152,9 @@ def convertSIToIndex(runDataFrame, indexDict=mergedIndexJson, reverseComplementS
     return runDataFrame
 
 def gexAtacSplit(masterDf):
-
+    '''
+    masterDf - main samplesheet as read in as a dataframe
+    '''
     dfWithIndexes = convertSIToIndex(masterDf)
     dfWithIndexes.to_csv(masterSamplesheet, index=False)
 
@@ -199,7 +207,14 @@ def gexAtacSplit(masterDf):
             
     return createdSheets
 
-def appendSamplesToTemplate(sampleCsv, outputCsv, sep=",", template_path="TemplateSamplesheet.csv"):
+def appendSamplesToTemplate(sampleCsv, outputCsv, sep=",", templatePath="./templates/TemplateSamplesheet.csv"):
+    '''
+    sampleCsv - per sample csv, read in previous output of gexAtacSplit()
+    outputCsv - samplesheet names generated as a result of gexAtacSplit()
+    sep - comma seperation indicator for pandas
+    templatePath - default template path for the samplesheet to be read in
+    '''
+    
     df = pd.read_csv(sampleCsv)
     rename_map = {
         'lane': 'Lane',
@@ -235,7 +250,7 @@ def appendSamplesToTemplate(sampleCsv, outputCsv, sep=",", template_path="Templa
             header_str = "Sample_ID,index,index2"
 
     # Read template
-    with open(template_path, "r") as f:
+    with open(templatePath, "r") as f:
         originalLines = f.readlines()
     
     # Custom ATAC block (with spacing)
@@ -294,7 +309,7 @@ def appendSamplesToTemplate(sampleCsv, outputCsv, sep=",", template_path="Templa
 def configSetupBCL(batchOnly, samplesheets, fc_bucket=terraBucket, runSteps=False):
     """
     batchOnly: DataFrame subset for this batch (must contain 'seq_dir')
-    samplesheets: Should be the outpit of gexAtacSplit in a dict form from the return
+    samplesheets: Should be the output of gexAtacSplit in a dict form from the return/result of the previous function
     fc_bucket: workspace bucket
     """
     fcBucket = terraBucket
@@ -343,6 +358,10 @@ def configSetupBCL(batchOnly, samplesheets, fc_bucket=terraBucket, runSteps=Fals
     return configsOut
 
 def createCountsSheet(countsMode="non-multiome", runSteps=False):
+    '''
+    countsMode - set by the flag/parameter in the command line submission, changes the input and whether cellranger or cellranger_arc is run
+    runSteps - set by --submit, will upload the required files for the cellranger workflow to run on Terra.
+    '''
     fcOutputDict = {}
     for fc in set(list(masterDf['flowcell'])):
         with open(f"./scripts/{setDate}/BCLConvert_{fc}.json", "r") as f:
@@ -387,6 +406,13 @@ def createCountsSheet(countsMode="non-multiome", runSteps=False):
     return countsSSLocation
 
 def configSetupCounts(countsMode, countsSampleSheetPath, intronStatus = "false", fcBucket=terraBucket):
+    '''
+    countsMode - set by the flag/parameter in the command line submission, changes the input and whether cellranger or cellranger_arc is run
+    countsSampleSheetPath - string provided from createCountsSheets() return output, location the samplesheet was uploaded to
+    intronStatus - set by the flag/parameter, defaulted to false
+    fcBucket - workspace bucket
+    '''
+
     with open("./templates/cellranger_template.json", "r") as f:
         crJson = json.load(f)
     
@@ -410,6 +436,11 @@ def configSetupCounts(countsMode, countsSampleSheetPath, intronStatus = "false",
     return crJsonsGenerated
 
 def configSetupCellbender(samplesToRun, postCellrangerArc=False, fcBucket=terraBucket):
+    '''
+    samplesToRun - the main samplesheet read in as a dataframe, subsetted to only the RNA/GEX samples due to typical cellbender workflows
+    postCellrangerArc - a control for directing the path variables to the corresponding "raw_feature_bc_matrix.h5" as an out from standard Cellranger or Cellranger_arc
+    fcBucket - workspace bucket
+    '''
     with open("./templates/cellbender_template.json") as f:
         cbJson = json.load(f)
     
@@ -435,8 +466,8 @@ def configSetupCellbender(samplesToRun, postCellrangerArc=False, fcBucket=terraB
 
 def scriptSteps(step, jsonGenerated, runStep=False):
     '''
-    step - steps fed in from argparse, of three steps (see additional notes)
-    jsonGenerated - outputs from the configSetup(method) functions, fed directly due to structuring for the alto terra submission script.
+    step - steps fed in from argparse, of three steps (see additional notes on github)
+    jsonGenerated - outputs from the ([configSetupBCL, configSetupCounts, configSetupCellbender]) functions, fed directly due to structuring for the alto terra submission script.
     runStep - submitting the job to Terra, controlled by --submit, default function to not submit
     '''
     stepDict = {"bclconvert" : "kco/bcl_convert",
@@ -499,6 +530,7 @@ if __name__ == "__main__":
     elif args.step == "cellbender":
         jsonGen = configSetupCellbender(masterDf, args.post_arc)
     
+    #Catch function to have jsonGen be a list when submitted, else it will iterate through a string
     if isinstance(jsonGen, str):
         jsonGen = [jsonGen]
     

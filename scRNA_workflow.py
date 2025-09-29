@@ -31,9 +31,9 @@ Steps should be run sequentially, as the outputs from each step feed into each o
 '''
 
 #Core settings that don't need to be changed often
-terraWorkspace = "kco-tech/sc_pipeline_tutorial"
-terraBucket = "fc-secure-15bf93cd-d43c-4a70-b7de-0ee36bf3a52a"
-masterSamplesheet = "./multiome_test.csv"
+terraWorkspace = "namespace(billing-project)/workspace"
+terraBucket = "fc-bucket-here"
+masterSamplesheet = "./test.csv"
 
 defaultDate = datetime.now().strftime("%Y_%m_%d")
 

@@ -187,7 +187,7 @@ def gexAtacSplit(masterDf):
                 gexToRun.to_csv(f"./samplesheets/{setDate}/{flowcellId}_GEX_L_samplesheet.csv", index=False)
             else:
                 gexToRun = gexDf[["sampleid", "index", "index2"]]
-                getToRunL = gexToRunL = f"{flowcellId}_GEX_samplesheet.csv"
+                getToRunL = f"{flowcellId}_GEX_samplesheet.csv"
                 gexToRun.to_csv(f"./samplesheets/{setDate}/{flowcellId}_GEX_samplesheet.csv", index=False)
             createdSheets[flowcellId] = gexToRunL
             
@@ -352,7 +352,8 @@ def createCountsSheet(countsMode="non-multiome", runSteps=False):
     )
 
     if countsMode == "non-multiome":
-        countsDf = masterDf[['sampleid', 'Counts_Input', 'chemistry', 'submethod', 'reference']]
+        countsDf = masterDf[masterDf['submethod'] == "rna"]
+        countsDf = countsDf[['sampleid', 'Counts_Input', 'chemistry', 'submethod', 'reference']]
         countsDf = countsDf.rename(columns={'sampleid' : 'Sample',
                                             'Counts_Input' : 'Flowcell',
                                             'chemistry' : 'Chemistry',
@@ -377,17 +378,17 @@ def createCountsSheet(countsMode="non-multiome", runSteps=False):
         if runSteps:
             subprocess.run(f"gcloud storage cp ./samplesheets/{setDate}/cellranger_arc.csv gs://{terraBucket}/{projName}/processed/", shell=True)
                 
-        return countsSSLocation
+    return countsSSLocation
 
-def configSetupCounts(countsMode, countsSampleSheetPath, intronStatus = "false"):
+def configSetupCounts(countsMode, countsSampleSheetPath, intronStatus = "false", fcBucket=terraBucket):
     with open("./templates/cellranger_template.json", "r") as f:
         crJson = json.load(f)
     
     if countsMode == "multiome":
-        outputLoc = f"gs://fc-secure-15bf93cd-d43c-4a70-b7de-0ee36bf3a52a/{projName}/processed/cellranger_arc_{projName}/"
+        outputLoc = f"gs://{fcBucket}/{projName}/processed/cellranger_arc_{projName}/"
         cellRangerJsonName = "Cellranger_arc"
     elif countsMode == "non-multiome":
-        outputLoc = f"gs://fc-secure-15bf93cd-d43c-4a70-b7de-0ee36bf3a52a/{projName}/processed/cellranger_{projName}/"
+        outputLoc = f"gs://{fcBucket}/{projName}/processed/cellranger_{projName}/"
         cellRangerJsonName = "Cellranger"
     
     newCRJson = dict(crJson)

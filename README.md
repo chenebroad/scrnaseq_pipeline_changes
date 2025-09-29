@@ -33,7 +33,7 @@ Detailed below are columns for each step.
 ## ALL:
 
 - run_pipeline (REQUIRED): Boolean (True or False) that determines what samples are processed. Set this to True for all samples you want to processs. All other samples must be set to False. How this works in operation is that as you add your new samples, set them to run_pipeline = True and set the previously run samples to run_pipeline = False. Remember that all samples that are processed together must come from the same flow cell. The code is written to only process one flow cell!
-project (REQUIRED): The name of the project you'd like to see attached to your directories
+- project (REQUIRED): The name of the project you'd like to see attached to your directories
 
 ## BCL_CONVERT:
 

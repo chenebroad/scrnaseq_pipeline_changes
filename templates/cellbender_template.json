@@ -7,5 +7,6 @@
     "cellbender_remove_background.run_cellbender_remove_background_gpu.hardware_preemptible_tries": "0",
     "cellbender_remove_background.run_cellbender_remove_background_gpu.z_dim": "100",
     "cellbender_remove_background.run_cellbender_remove_background_gpu.learning_rate": "0.00005",
-    "cellbender_remove_background.run_cellbender_remove_background_gpu.output_bucket_base_directory": "{output}"
+    "cellbender_remove_background.run_cellbender_remove_background_gpu.output_bucket_base_directory": "{output}",
+    "cellbender_remove_background.run_cellbender_remove_background_gpu.hardware_zones": "us-central1-c"
 }

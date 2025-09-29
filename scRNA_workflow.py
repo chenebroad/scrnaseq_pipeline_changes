@@ -94,6 +94,12 @@ def parse_args():
     return parser.parse_args()
 
 def preRunCheck():
+    if not os.path.exists(f"./scripts/") or not os.path.exists(f"./samplesheets"):
+        try:
+            os.mkdir(f"./scripts/")
+            os.mkdir(f"./samplesheets")
+        except:
+            print("Error creating samplesheet and scripts folders (try removing them before running the script agains)")
     if not os.path.exists(f"./scripts/{setDate}"):
         os.mkdir(f"./scripts/{setDate}")
     if not os.path.exists(f"./samplesheets/{setDate}"):
@@ -403,7 +409,7 @@ def configSetupCounts(countsMode, countsSampleSheetPath, intronStatus = "false",
     
     return crJsonsGenerated
 
-def configSetupCellbender(samplesToRun, postCellrangerArc=False):
+def configSetupCellbender(samplesToRun, postCellrangerArc=False, fcBucket=terraBucket):
     with open("./templates/cellbender_template.json") as f:
         cbJson = json.load(f)
     
@@ -413,12 +419,12 @@ def configSetupCellbender(samplesToRun, postCellrangerArc=False):
     for _ , row in samplesToRun.iterrows():
         config = dict(cbJson)
         config["cellbender_remove_background.run_cellbender_remove_background_gpu.sample_name"] = row['sampleid']
-        config["cellbender_remove_background.run_cellbender_remove_background_gpu.output_bucket_base_directory"] = f"gs://{terraBucket}/{projName}/processed/cellbender_v3_{projName}/"
+        config["cellbender_remove_background.run_cellbender_remove_background_gpu.output_bucket_base_directory"] = f"gs://{fcBucket}/{projName}/processed/cellbender_v3_{projName}/"
         if postCellrangerArc:
-            config["cellbender_remove_background.run_cellbender_remove_background_gpu.input_file_unfiltered"] = f"gs://{terraBucket}/{projName}/processed/cellranger_arc/{row['link_id']}/raw_feature_bc_matrix.h5"
+            config["cellbender_remove_background.run_cellbender_remove_background_gpu.input_file_unfiltered"] = f"gs://{fcBucket}/{projName}/processed/cellranger_arc_{projName}/{row['link_id']}/raw_feature_bc_matrix.h5"
             outputFile = f"Cellbender_{row['link_id']}.json"
         else:
-            config["cellbender_remove_background.run_cellbender_remove_background_gpu.input_file_unfiltered"] = f"gs://{terraBucket}/{projName}/processed/cellranger/{row['sampleid']}/raw_feature_bc_matrix.h5"
+            config["cellbender_remove_background.run_cellbender_remove_background_gpu.input_file_unfiltered"] = f"gs://{fcBucket}/{projName}/processed/cellranger_{projName}/{row['sampleid']}/raw_feature_bc_matrix.h5"
             outputFile = f"Cellbender_{row['sampleid']}.json"
         
         with open(f"./scripts/{setDate}/{outputFile}", "w") as f:

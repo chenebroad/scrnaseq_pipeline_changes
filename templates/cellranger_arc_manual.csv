@@ -1,3 +1,0 @@
-﻿Sample,Reference,Flowcell,DataType,Link
-1181512_IEL_Normal_TI_27k_rep,GRCh38-2020-A_arc_v2.0.0,gs://fc-secure-15bf93cd-d43c-4a70-b7de-0ee36bf3a52a/767_CD/fastqs_767_CD/rna/250506_SL-EXA_0501_A22TY2KLT4_fastqs/sample_fastqs/1181512_IEL_Normal_TI_27k,rna,1181512_IEL_Normal_TI_27k_rep
-1181512_IEL_Normal_TI_27k_rep,GRCh38-2020-A_arc_v2.0.0,gs://fc-secure-15bf93cd-d43c-4a70-b7de-0ee36bf3a52a/WenkaiMultiome/fastq/250825_VH00997_445_222FMY3NX_fastqs/sample_fastqs/1181512_IEL_Normal_TI_27k_rep,atac,1181512_IEL_Normal_TI_27k_rep

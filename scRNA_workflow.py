@@ -83,6 +83,9 @@ def parse_args():
                           choices=["multiome", "non-multiome"], 
                           default="non-multiome", 
                           help="Specify modality for counts")
+    parserCr.add_argument("--introns",
+                          action="store_true",
+                          help="include Intron calculations on the cellranger submission")
 
     parserCb = subparsers.add_parser("cellbender", 
                                      help="Run Cellbender",

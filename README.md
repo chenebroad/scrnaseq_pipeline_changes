@@ -5,7 +5,17 @@ The main script allows for the creation and upload of inputs to the correspondin
 In principal, the pipeline/script runs similarly where in the workflows are submitted to Terra for parallelization and actual computation, and the script functions as a liasion for creating the inputs and stringing them together for stepwise submission.
 A .yaml file has been provided with corresponding packages required to run the script. 
 
-For future considerations, it may be important to include more workflow specific parameters to slot into the WDLs/workflows maintained by the Cumulus and Cellbender Teams.
+## Installation
+
+Outside of installing the yaml, one would also need to create an environment:
+
+`conda create -n alto-terra python=3.10`
+
+Additionally, making sure that permissions are set up accordingly for the Google Cloud SDK:
+
+`gcloud auth login`
+
+For future considerations, it may be important to include more workflow specific parameters to slot into the WDLs/workflows maintained by the Cumulus and Cellbender teams.
 
 Step-wise there are three main steps that run off of the csv file provided - depending on the incoming data it is imperative to use the correct samplesheet template:
 The sample tracking file, in csv format, is a useful way to track the important information for each sample, and is needed to run this script. Each sample requires the following text fields.

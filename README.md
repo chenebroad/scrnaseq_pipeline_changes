@@ -40,7 +40,7 @@ project (REQUIRED): The name of the project you'd like to see attached to your d
 - link_id (REQUIRED): Base sample name to be used for linking multiome samples together for post processing, GEX and ATAC samples that are from the same subject should have the sample link_id.
 - sample_id (REQUIRED): General name assignment for the samples given to generated downstream files, in multiome samples this will function slightly differently in order to fit accomodations for the cellranger_arc workflow, will serve as a way to uniquely identify linked/paired samples.
 - method (OPTIONAL): [rna, atac, or multiome] currently does not control any core functions but will help with delineating any files.
-- submethod: [rna, atac] now pridominantly used for determining how to run the files through BCLConvert, where in all indices from ATAC data will be captured and structured accordingly to BCL_CONVERT samplesheet requirements. rna corresponds to GEX data, whilst atac will be for ATAC data.
+- submethod: [rna, atac] now predominantly used for determining how to run the files through BCLConvert, where in all indices from ATAC data will be captured and structured accordingly to BCL_CONVERT samplesheet requirements. rna corresponds to GEX data, whilst atac will be for ATAC data.
 - index[2,3,4] (CONTINGENT): The corresponding indices written in the nucleotide form.
 - flowcell (REQUIRED): The flowcell id from your sequencing run, has slight functionings with path generation and seperation, it is more important to label samples that go together than for actual running processes, serves as a grouping measure. Generally speaking, if a flowcell is given (250825_VH00997_445_222FMY3NX), it will should be the last portion after the last underscore (e.g. 222FMY3NX).
 - seq_dir (REQUIRED):  The directory of your sequencing results in GCP, downstream folder names will pull from this varible.
@@ -57,7 +57,7 @@ See above: sample_id
 
 See_above: sample_id
 
-Legacy columns with potential use (pre-Cellbender v0.3.0 required manual assignment of parameters, now it is automaticall calculated.) If need for manual parameter selection is required, the functionality will be added to the current script.
+Legacy columns with potential use (pre-Cellbender v0.3.0 required manual assignment of parameters, now it is automatically calculated.) If need for manual parameter selection is required, the functionality will be added to the current script.
 
 - min_umis (OPTIONAL): the min number of UMIs you'd like to use for filtering when you run cumulus pegasus. 
 - min_genes (OPTIONAL): the min number of genes you'd like to use for filtering when you run cumulus pegasus.

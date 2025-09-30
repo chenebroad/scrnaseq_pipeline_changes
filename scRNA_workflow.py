@@ -84,8 +84,9 @@ def parse_args():
                           default="non-multiome", 
                           help="Specify modality for counts")
     parserCr.add_argument("--introns",
+                          required = False,
                           action="store_true",
-                          help="include Intron calculations on the cellranger submission")
+                          help = "If wanting to include introns in cellranger calculations provide this flag.")
 
     parserCb = subparsers.add_parser("cellbender", 
                                      help="Run Cellbender",
@@ -93,6 +94,10 @@ def parse_args():
     parserCb.add_argument("--post_arc",
                           action="store_true",
                           help="Add this parameter if the counts results are from Cellranger_arc, this changes the path set to match up with ARC file paths")
+
+    parserCc = subparsers.add_parser("cumulus",
+                                     help="Run Cumulus doublet prediction",
+                                     parents=[parserGlobal])
 
     return parser.parse_args()
 
@@ -311,9 +316,9 @@ def appendSamplesToTemplate(sampleCsv, outputCsv, sep=",", templatePath="./templ
 #Requires that gexAtacSplit() is run
 def configSetupBCL(batchOnly, samplesheets, fc_bucket=terraBucket, runSteps=False):
     """
-    batchOnly: DataFrame subset for this batch (must contain 'seq_dir')
-    samplesheets: Should be the output of gexAtacSplit in a dict form from the return/result of the previous function
-    fc_bucket: workspace bucket
+    batchOnly - DataFrame subset for this batch (must contain 'seq_dir')
+    samplesheets - Should be the output of gexAtacSplit in a dict form from the return/result of the previous function
+    fc_bucket - workspace bucket
     """
     fcBucket = terraBucket
     bclPaths = set(list(batchOnly['seq_dir']))  # unique flowcell dirs
@@ -392,7 +397,6 @@ def createCountsSheet(countsMode="non-multiome", runSteps=False):
         if runSteps: 
             subprocess.run(f"gcloud storage cp ./samplesheets/{setDate}/cellranger.csv gs://{terraBucket}/{projName}/processed/", shell=True)
             
-
     elif countsMode == "multiome":
         countsDf = masterDf[['sampleid', 'Counts_Input', 'chemistry', 'submethod', 'reference', 'link_id']]
         countsDf = countsDf.rename(columns={'sampleid' : 'Sample',
@@ -405,8 +409,27 @@ def createCountsSheet(countsMode="non-multiome", runSteps=False):
         countsSSLocation = f"gs://{terraBucket}/{projName}/processed/cellranger_arc.csv"
         if runSteps:
             subprocess.run(f"gcloud storage cp ./samplesheets/{setDate}/cellranger_arc.csv gs://{terraBucket}/{projName}/processed/", shell=True)
-                
+                           
     return countsSSLocation
+
+def createCumulusSheet(samplesToRun, fcBucket=terraBucket, runSteps=False):
+    '''
+    samplesToRun - the main samplesheet read in as a dataframe, subsetted to only the RNA/GEX samples due to typical cellbender workflows
+    fcBucket - workspace bucket
+    runSteps - submitting the job to Terra, controlled by --submit, default function to not submit
+    '''
+    cbPath = f"gs://{fcBucket}/{projName}/processed/cellbender_v3_{projName}/"
+    ccDf = samplesToRun[samplesToRun['submethod'] == 'rna']
+    ccDf['Location'] = cbPath + ccDf['sampleid']+ "/" + ccDf['sampleid']+ "_out_filtered.h5"
+    ccDf = ccDf[['sampleid', 'Location']]
+    ccDf = ccDf.rename(columns={'sampleid' : "Sample"})
+    
+    for sampleId in ccDf['Sample']:
+        tempDf = ccDf[ccDf['Sample'] == sampleId]
+        tempDf.to_csv(f"./samplesheets/{setDate}/Cumulus_{sampleId}.csv", index=False)
+    
+        if runSteps:
+            subprocess.run(f"gcloud storage cp ./samplesheets/{setDate}/Cumulus_{sampleId}.csv gs://{fcBucket}/{projName}/processed/cellbender_cumulus_{projName}/{sampleId}/Cumulus_{sampleId}.csv", shell=True)
 
 def configSetupCounts(countsMode, countsSampleSheetPath, intronStatus = "false", fcBucket=terraBucket):
     '''
@@ -467,6 +490,32 @@ def configSetupCellbender(samplesToRun, postCellrangerArc=False, fcBucket=terraB
         
     return cbJsonsGenerated
 
+def configSetupCumulus(samplesToRun, fcBucket=terraBucket):
+    '''
+    samplesToRun - the main samplesheet read in as a dataframe, subsetted to only the RNA/GEX samples due to typical cellbender workflows
+    postCellrangerArc - a control for directing the path variables to the corresponding "raw_feature_bc_matrix.h5" as an out from standard Cellranger or Cellranger_arc
+    fcBucket - workspace bucket
+    '''
+
+    with open("./templates/cumulus_template.json") as f:
+        ccJson = json.load(f)
+    
+    samplesToRun = samplesToRun[samplesToRun['submethod'] == 'rna']
+
+    ccJsonsGenerated = []
+
+    for _, row in samplesToRun.iterrows():
+        config = dict(ccJson)
+        config['cumulus.input_file'] = f"gs://{fcBucket}/{projName}/processed/cellbender_cumulus_{projName}/{row['sampleid']}/Cumulus_{row['sampleid']}.csv"
+        config['cumulus.output_directory'] = f"gs://{fcBucket}/{projName}/processed/cellbender_cumulus_{projName}/"
+        config['cumulus.output_name'] = f"{row['sampleid']}"
+        outputFile = f"Cumulus_{row['sampleid']}.json"
+        with open(f"./scripts/{setDate}/{outputFile}", "w") as f:
+            json.dump(config, f, indent=2)
+        ccJsonsGenerated.append(outputFile)
+
+    return ccJsonsGenerated
+
 def scriptSteps(step, jsonGenerated, runStep=False):
     '''
     step - steps fed in from argparse, of three steps (see additional notes on github)
@@ -475,7 +524,8 @@ def scriptSteps(step, jsonGenerated, runStep=False):
     '''
     stepDict = {"bclconvert" : "kco/bcl_convert",
                 "counts" : "lilab:cumulus:Cellranger:3.1.1",
-                "cellbender" : "cellbender/remove-background/13"}
+                "cellbender" : "cellbender/remove-background/13",
+                "cumulus" : "cumulus/cumulus"}
     
     scriptBaseText = f'''#!/bin/bash
     
@@ -520,18 +570,22 @@ if __name__ == "__main__":
         for sheets in createdSheets.values():
             appendSamplesToTemplate(f"./samplesheets/{setDate}/{sheets}",
                                     f"./samplesheets/{setDate}/BCL_Convert_{sheets}",
-                                    template_path="./templates/TemplateSamplesheet.csv")
+                                    templatePath="./templates/TemplateSamplesheet.csv")
         jsonGen = configSetupBCL(masterDf, createdSheets, runSteps=args.submit)
     
     elif args.step == "counts":
         print(f"Counts modality: {args.modality}")
         countsSamplesLocation= createCountsSheet(args.modality, args.submit)
         jsonGen = configSetupCounts(countsMode=args.modality,
-                                    intronStatus = args.intron,
+                                    intronStatus = args.introns,
                                     countsSampleSheetPath=countsSamplesLocation)
 
     elif args.step == "cellbender":
         jsonGen = configSetupCellbender(masterDf, args.post_arc)
+    
+    elif args.step == "cumulus":
+        createCumulusSheet(masterDf, runSteps = args.submit)
+        jsonGen = configSetupCumulus(masterDf)
     
     #Catch function to have jsonGen be a list when submitted, else it will iterate through a string
     if isinstance(jsonGen, str):

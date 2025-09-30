@@ -22,7 +22,7 @@ For the initial run, select which samples to run via run_pipeline, and use the a
 Fill in Lane (if applicable), SI_Index column (if applicable, otherwise fill in the indices), project, method, submethod, reference, chemistry (auto if unknown),
 flowcell, and path of the BCL directory.
 
-General usage includes 'python3 scRNA_workflow.py [bclconvert | counts | cellbender]' (optional) --date  (optional) --submit
+General usage includes 'python3 scRNA_workflow.py [bclconvert | counts | cellbender | cumulus]' (optional) --date  (optional) --submit
 If using 'counts', supply --multiome if there are corresponding GEX and ATAC samples, the default option will assume there is no linkage.
 If using 'cellbender', supply --post_arc to point the input paths to the corresponding cellranger_arc folders, leave it out if it was not paired data.
 

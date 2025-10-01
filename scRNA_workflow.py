@@ -28,14 +28,16 @@ If using 'cellbender', supply --post_arc to point the input paths to the corresp
 
 Steps should be run sequentially, as the outputs from each step feed into each other, but to just generate outputs and not submit the workflow, omit the --submit flag.
 
+To use a previously generated set of samplesheets and scripts specify the date (--date) to select that set of inputs.
+
 '''
 
 #Core settings that don't need to be changed often
 terraWorkspace = "namespace(billing-project)/workspace"
 terraBucket = "fc-bucket-here"
 masterSamplesheet = "./test.csv"
-
 defaultDate = datetime.now().strftime("%Y_%m_%d")
+
 
 masterDf = pd.read_csv(masterSamplesheet)
 masterDf = masterDf[masterDf['run_pipeline'] == True]
@@ -215,7 +217,7 @@ def gexAtacSplit(masterDf):
             
     return createdSheets
 
-def appendSamplesToTemplate(sampleCsv, outputCsv, sep=",", templatePath="./templates/TemplateSamplesheet.csv"):
+def appendSamplesToTemplate(sampleCsv, outputCsv, sep=",", templatePath="./templates/template_samplesheet.csv"):
     '''
     sampleCsv - per sample csv, read in previous output of gexAtacSplit()
     outputCsv - samplesheet names generated as a result of gexAtacSplit()
@@ -570,7 +572,7 @@ if __name__ == "__main__":
         for sheets in createdSheets.values():
             appendSamplesToTemplate(f"./samplesheets/{setDate}/{sheets}",
                                     f"./samplesheets/{setDate}/BCL_Convert_{sheets}",
-                                    templatePath="./templates/TemplateSamplesheet.csv")
+                                    templatePath="./templates/template_samplesheet.csv")
         jsonGen = configSetupBCL(masterDf, createdSheets, runSteps=args.submit)
     
     elif args.step == "counts":

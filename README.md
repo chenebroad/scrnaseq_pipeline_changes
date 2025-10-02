@@ -7,9 +7,13 @@ A .yaml file has been provided with corresponding packages required to run the s
 
 ## Installation
 
-Outside of installing the yaml, one would also need to create an environment:
+You will need some way of running conda/python.
 
-`conda create -n alto-terra -f alto-terra.yaml python=3.10`
+Firstly create an environment from this yaml and activate it:
+
+`conda create -f alto-terra.yaml`
+
+`conda activate alto-terra`
 
 Additionally, making sure that permissions are set up accordingly for the Google Cloud SDK:
 

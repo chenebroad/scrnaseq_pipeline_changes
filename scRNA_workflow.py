@@ -392,7 +392,7 @@ def createCountsSheet(countsMode="non-multiome", runSteps=False):
         countsDf = countsDf.rename(columns={'sampleid' : 'Sample',
                                             'Counts_Input' : 'Flowcell',
                                             'chemistry' : 'Chemistry',
-                                            'method' : 'DataType',
+                                            'submethod' : 'DataType',
                                             'reference' : 'Reference'})
         countsDf.to_csv(f"./samplesheets/{setDate}/cellranger.csv", index=False)
         countsSSLocation = f"gs://{terraBucket}/{projName}/processed/cellranger.csv"

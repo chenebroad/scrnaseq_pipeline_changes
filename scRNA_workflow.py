@@ -417,10 +417,10 @@ def createCountsSheet(countsMode="non-multiome", runSteps=False):
             'bcr' : 'vdj_b',
             'tcr' : 'vdj_t'
         }
-        masterDf['DataType'] = masterDf['submethod'].apply(vdjMapping)
-        countsDf = masterDf[(masterDf['submethod'] == "tcr" or masterDf['submethod'] == "bcr")]
-        countsDf = countsDf['sampleid', 'Counts_Input', 'chemistry', 'DataType', 'reference']
-        countsDf['Chemistry'] = "fiveprime"
+        masterDf['DataType'] = masterDf['submethod'].map(vdjMapping)
+        countsDf = masterDf[(masterDf['submethod'] == "tcr") | (masterDf['submethod'] == "bcr")]
+        countsDf = countsDf[['sampleid', 'Counts_Input', 'chemistry', 'DataType', 'reference']]
+        countsDf['chemistry'] = "fiveprime"
         countsDf = countsDf.rename(columns={'sampleid' : 'Sample',
                                             'Counts_Input' : 'Flowcell',
                                             'chemistry' : 'Chemistry',

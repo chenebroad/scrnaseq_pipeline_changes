@@ -82,7 +82,7 @@ def parse_args():
                                       help="Run Cellranger counts",
                                       parents=[parserGlobal])
     parserCr.add_argument("--modality", 
-                          choices=["multiome", "non-multiome"], 
+                          choices=["multiome", "non-multiome", "vdj"], 
                           default="non-multiome", 
                           help="Specify modality for counts")
     parserCr.add_argument("--introns",
@@ -411,6 +411,24 @@ def createCountsSheet(countsMode="non-multiome", runSteps=False):
         countsSSLocation = f"gs://{terraBucket}/{projName}/processed/cellranger_arc.csv"
         if runSteps:
             subprocess.run(f"gcloud storage cp ./samplesheets/{setDate}/cellranger_arc.csv gs://{terraBucket}/{projName}/processed/", shell=True)
+    
+    elif countsMode == "vdj":
+        vdjMapping = {
+            'bcr' : 'vdj_b',
+            'tcr' : 'vdj_t'
+        }
+        masterDf['DataType'] = masterDf['submethod'].apply(vdjMapping)
+        countsDf = masterDf[(masterDf['submethod'] == "tcr" or masterDf['submethod'] == "bcr")]
+        countsDf = countsDf['sampleid', 'Counts_Input', 'chemistry', 'DataType', 'reference']
+        countsDf['Chemistry'] = "fiveprime"
+        countsDf = countsDf.rename(columns={'sampleid' : 'Sample',
+                                            'Counts_Input' : 'Flowcell',
+                                            'chemistry' : 'Chemistry',
+                                            'reference' : 'Reference'})
+        countsDf.to_csv(f"./samplesheets/{setDate}/cellranger_vdj.csv", index=False)
+        countsSSLocation = f"gs://{terraBucket}/{projName}/processed/cellranger_vdj.csv"
+        if runSteps:
+            subprocess.run(f"gcloud storage cp ./samplesheets/{setDate}/cellranger_vdj.csv gs://{terraBucket}/{projName}/processed/", shell=True)
                            
     return countsSSLocation
 
@@ -450,7 +468,10 @@ def configSetupCounts(countsMode, countsSampleSheetPath, intronStatus = "false",
     elif countsMode == "non-multiome":
         outputLoc = f"gs://{fcBucket}/{projName}/processed/cellranger_{projName}/"
         cellRangerJsonName = "Cellranger"
-    
+    elif countsMode == "vdj":
+        outputLoc = f"gs://{fcBucket}/{projName}/processed/cellranger_vdj_{projName}/"
+        cellRangerJsonName = "Cellranger_vdj"
+
     newCRJson = dict(crJson)
     newCRJson['cellranger_workflow.input_csv_file'] = countsSampleSheetPath
     newCRJson['cellranger_workflow.output_directory'] = outputLoc

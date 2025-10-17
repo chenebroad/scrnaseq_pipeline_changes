@@ -461,6 +461,7 @@ def configSetupCounts(countsMode, countsSampleSheetPath, outputSuffix=False, int
     countsMode - set by the flag/parameter in the command line submission, changes the input and whether cellranger or cellranger_arc is run
     countsSampleSheetPath - string provided from createCountsSheets() return output, location the samplesheet was uploaded to
     intronStatus - set by the flag/parameter, defaulted to false
+    outputSuffix - option for adding a suffix to the standard output path for storing multiple iterations / runs
     '''
 
     with open("./templates/cellranger_template.json", "r") as f:
@@ -495,6 +496,7 @@ def configSetupCellbender(samplesToRun, outputSuffix=False, postCellrangerArc=Fa
     '''
     samplesToRun - the main samplesheet read in as a dataframe, subsetted to only the RNA/GEX samples due to typical cellbender workflows
     postCellrangerArc - a control for directing the path variables to the corresponding "raw_feature_bc_matrix.h5" as an out from standard Cellranger or Cellranger_arc
+    outputSuffix - option for adding a suffix to the standard output path for storing multiple iterations / runs
     '''
 
     with open("./templates/cellbender_template.json") as f:
@@ -526,6 +528,7 @@ def configSetupCellbender(samplesToRun, outputSuffix=False, postCellrangerArc=Fa
 def configSetupCumulus(samplesToRun, outputSuffix=False):
     '''
     samplesToRun - the main samplesheet read in as a dataframe, subsetted to only the RNA/GEX samples due to typical cellbender workflows
+    outputSuffix - option for adding a suffix to the standard output path for storing multiple iterations / runs
     '''
 
     with open("./templates/cumulus_template.json") as f:
@@ -574,7 +577,7 @@ alto terra run \
     -w {terraWorkspace} \
     -m {stepDict[step]} \
     -i JsonValue \
-    -no-cache
+    --no-cache
 '''
     
     scriptsGenerated = []

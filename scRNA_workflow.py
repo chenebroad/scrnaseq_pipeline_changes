@@ -551,7 +551,7 @@ def configSetupCumulus(samplesToRun, outputSuffix=False):
         for key in ['percent_mito', 'min_umis', 'min_genes']:
             val = row.get(key)
             if pd.notna(val) and val != '':
-                config[key] = val  # override default only if valid
+                config[f"cumulus.{key}"] = str(val)  # override default only if valid
 
         outputFile = f"Cumulus_{row['sampleid']}.json"
         with open(f"./scripts/{setDate}/{outputFile}", "w") as f:

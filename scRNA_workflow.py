@@ -38,13 +38,14 @@ terraBucket = "fc-bucket-here"
 masterSamplesheet = "./test.csv"
 defaultDate = datetime.now().strftime("%Y_%m_%d")
 
-
 masterDf = pd.read_csv(masterSamplesheet)
 masterDf = masterDf[masterDf['run_pipeline'] == True]
 if "link_id" in masterDf.columns:
     masterDf['sampleid'] = masterDf['link_id'] + "_" + masterDf['submethod']
 
 projName = list(masterDf['project'])[0]
+basePath = f"gs://{terraBucket}/{projName}"
+basePathProcessed = f"gs://{terraBucket}/{projName}/processed/"
 
 mergedIndexJson = {}
 jsonsList = [x for x in os.listdir("./ref/") if x.endswith(".json")]
@@ -65,6 +66,11 @@ def parse_args():
                               required=False,
                               action="store_true",
                               help="Immediately submit run to Terra after creating input and upload inputs")
+    
+    parserGlobal.add_argument("--output",
+                              default=False,
+                              required=False,
+                              help="Enter to append a suffix onto the default output paths of each config json output")
 
     parser = argparse.ArgumentParser(description="Running the scRNA workflow one step at a time, each step requires the prior step ",
                                      parents=[parserGlobal])
@@ -316,13 +322,12 @@ def appendSamplesToTemplate(sampleCsv, outputCsv, sep=",", templatePath="./templ
     return outputCsv
 
 #Requires that gexAtacSplit() is run
-def configSetupBCL(batchOnly, samplesheets, fc_bucket=terraBucket, runSteps=False):
+def configSetupBCL(batchOnly, samplesheets, runSteps=False):
     """
     batchOnly - DataFrame subset for this batch (must contain 'seq_dir')
     samplesheets - Should be the output of gexAtacSplit in a dict form from the return/result of the previous function
-    fc_bucket - workspace bucket
     """
-    fcBucket = terraBucket
+
     bclPaths = set(list(batchOnly['seq_dir']))  # unique flowcell dirs
     configsOut = []
 
@@ -348,8 +353,8 @@ def configSetupBCL(batchOnly, samplesheets, fc_bucket=terraBucket, runSteps=Fals
             newConfig = dict(bclJson)  # base config
             newConfig['bclconvert.input_bcl_directory'] = bclPath
             newConfig['bclconvert.no_lane_splitting'] = laneSplit
-            newConfig['bclconvert.output_directory'] = f"gs://{fcBucket}/{projName}/fastqs_{projName}/"
-            newConfig['bclconvert.sample_sheet'] = f"gs://{fcBucket}/{projName}/samplesheets_{projName}/BCL_Convert_{sheetName}"
+            newConfig['bclconvert.output_directory'] = f"{basePath}fastqs_{projName}/"
+            newConfig['bclconvert.sample_sheet'] = f"{basePath}samplesheets_{projName}/BCL_Convert_{sheetName}"
 
             # Write config with flowcell ID in name
             outFile = f"BCLConvert_{flowcellId}.json"
@@ -361,7 +366,7 @@ def configSetupBCL(batchOnly, samplesheets, fc_bucket=terraBucket, runSteps=Fals
             # Optionally push the sheet up to GCP
             if runSteps:
                 subprocess.run(
-                    f"gcloud storage cp ./samplesheets/{setDate}/BCL_Convert_{sheetName} gs://{fcBucket}/{projName}/samplesheets_{projName}/",
+                    f"gcloud storage cp ./samplesheets/{setDate}/BCL_Convert_{sheetName} {basePath}samplesheets_{projName}/",
                     shell=True
                 )
 
@@ -395,9 +400,9 @@ def createCountsSheet(countsMode="non-multiome", runSteps=False):
                                             'submethod' : 'DataType',
                                             'reference' : 'Reference'})
         countsDf.to_csv(f"./samplesheets/{setDate}/cellranger.csv", index=False)
-        countsSSLocation = f"gs://{terraBucket}/{projName}/processed/cellranger.csv"
+        countsSSLocation = f"{basePathProcessed}cellranger.csv"
         if runSteps: 
-            subprocess.run(f"gcloud storage cp ./samplesheets/{setDate}/cellranger.csv gs://{terraBucket}/{projName}/processed/", shell=True)
+            subprocess.run(f"gcloud storage cp ./samplesheets/{setDate}/cellranger.csv {basePathProcessed}", shell=True)
             
     elif countsMode == "multiome":
         countsDf = masterDf[['sampleid', 'Counts_Input', 'chemistry', 'submethod', 'reference', 'link_id']]
@@ -408,9 +413,9 @@ def createCountsSheet(countsMode="non-multiome", runSteps=False):
                                             'reference' : 'Reference',
                                             'link_id' : 'Link'})
         countsDf.to_csv(f"./samplesheets/{setDate}/cellranger_arc.csv", index=False)
-        countsSSLocation = f"gs://{terraBucket}/{projName}/processed/cellranger_arc.csv"
+        countsSSLocation = f"{basePathProcessed}cellranger_arc.csv"
         if runSteps:
-            subprocess.run(f"gcloud storage cp ./samplesheets/{setDate}/cellranger_arc.csv gs://{terraBucket}/{projName}/processed/", shell=True)
+            subprocess.run(f"gcloud storage cp ./samplesheets/{setDate}/cellranger_arc.csv {basePathProcessed}", shell=True)
     
     elif countsMode == "vdj":
         vdjMapping = {
@@ -426,19 +431,19 @@ def createCountsSheet(countsMode="non-multiome", runSteps=False):
                                             'chemistry' : 'Chemistry',
                                             'reference' : 'Reference'})
         countsDf.to_csv(f"./samplesheets/{setDate}/cellranger_vdj.csv", index=False)
-        countsSSLocation = f"gs://{terraBucket}/{projName}/processed/cellranger_vdj.csv"
+        countsSSLocation = f"{basePathProcessed}cellranger_vdj.csv"
         if runSteps:
-            subprocess.run(f"gcloud storage cp ./samplesheets/{setDate}/cellranger_vdj.csv gs://{terraBucket}/{projName}/processed/", shell=True)
+            subprocess.run(f"gcloud storage cp ./samplesheets/{setDate}/cellranger_vdj.csv {basePathProcessed}", shell=True)
                            
     return countsSSLocation
 
-def createCumulusSheet(samplesToRun, fcBucket=terraBucket, runSteps=False):
+def createCumulusSheet(samplesToRun, runSteps=False):
     '''
     samplesToRun - the main samplesheet read in as a dataframe, subsetted to only the RNA/GEX samples due to typical cellbender workflows
-    fcBucket - workspace bucket
     runSteps - submitting the job to Terra, controlled by --submit, default function to not submit
     '''
-    cbPath = f"gs://{fcBucket}/{projName}/processed/cellbender_v3_{projName}/"
+
+    cbPath = f"{basePathProcessed}cellbender_v3_{projName}/"
     ccDf = samplesToRun[samplesToRun['submethod'] == 'rna']
     ccDf['Location'] = cbPath + ccDf['sampleid']+ "/" + ccDf['sampleid']+ "_out_filtered.h5"
     ccDf = ccDf[['sampleid', 'Location']]
@@ -449,28 +454,30 @@ def createCumulusSheet(samplesToRun, fcBucket=terraBucket, runSteps=False):
         tempDf.to_csv(f"./samplesheets/{setDate}/Cumulus_{sampleId}.csv", index=False)
     
         if runSteps:
-            subprocess.run(f"gcloud storage cp ./samplesheets/{setDate}/Cumulus_{sampleId}.csv gs://{fcBucket}/{projName}/processed/cellbender_cumulus_{projName}/{sampleId}/Cumulus_{sampleId}.csv", shell=True)
+            subprocess.run(f"gcloud storage cp ./samplesheets/{setDate}/Cumulus_{sampleId}.csv {basePathProcessed}cellbender_cumulus_{projName}/{sampleId}/Cumulus_{sampleId}.csv", shell=True)
 
-def configSetupCounts(countsMode, countsSampleSheetPath, intronStatus = "false", fcBucket=terraBucket):
+def configSetupCounts(countsMode, countsSampleSheetPath, outputSuffix=False, intronStatus = "false"):
     '''
     countsMode - set by the flag/parameter in the command line submission, changes the input and whether cellranger or cellranger_arc is run
     countsSampleSheetPath - string provided from createCountsSheets() return output, location the samplesheet was uploaded to
     intronStatus - set by the flag/parameter, defaulted to false
-    fcBucket - workspace bucket
     '''
 
     with open("./templates/cellranger_template.json", "r") as f:
         crJson = json.load(f)
     
-    if countsMode == "multiome":
-        outputLoc = f"gs://{fcBucket}/{projName}/processed/cellranger_arc_{projName}/"
-        cellRangerJsonName = "Cellranger_arc"
-    elif countsMode == "non-multiome":
-        outputLoc = f"gs://{fcBucket}/{projName}/processed/cellranger_{projName}/"
-        cellRangerJsonName = "Cellranger"
-    elif countsMode == "vdj":
-        outputLoc = f"gs://{fcBucket}/{projName}/processed/cellranger_vdj_{projName}/"
-        cellRangerJsonName = "Cellranger_vdj"
+    countsModeDict = {
+        'multiome' : '_arc',
+        'non-multiome' : '',
+        'vdj' : '_vdj'
+    }
+
+    if outputSuffix:
+        outputLoc = f"{basePathProcessed}cellranger{countsModeDict[countsMode]}_{projName}_{outputSuffix}/"
+    else:
+        outputLoc = f"{basePathProcessed}cellranger{countsModeDict[countsMode]}_{projName}/"
+
+    cellRangerJsonName = f"Cellranger" + countsModeDict[countsMode]
 
     newCRJson = dict(crJson)
     newCRJson['cellranger_workflow.input_csv_file'] = countsSampleSheetPath
@@ -484,12 +491,12 @@ def configSetupCounts(countsMode, countsSampleSheetPath, intronStatus = "false",
     
     return crJsonsGenerated
 
-def configSetupCellbender(samplesToRun, postCellrangerArc=False, fcBucket=terraBucket):
+def configSetupCellbender(samplesToRun, outputSuffix=False, postCellrangerArc=False):
     '''
     samplesToRun - the main samplesheet read in as a dataframe, subsetted to only the RNA/GEX samples due to typical cellbender workflows
     postCellrangerArc - a control for directing the path variables to the corresponding "raw_feature_bc_matrix.h5" as an out from standard Cellranger or Cellranger_arc
-    fcBucket - workspace bucket
     '''
+
     with open("./templates/cellbender_template.json") as f:
         cbJson = json.load(f)
     
@@ -499,12 +506,15 @@ def configSetupCellbender(samplesToRun, postCellrangerArc=False, fcBucket=terraB
     for _ , row in samplesToRun.iterrows():
         config = dict(cbJson)
         config["cellbender_remove_background.run_cellbender_remove_background_gpu.sample_name"] = row['sampleid']
-        config["cellbender_remove_background.run_cellbender_remove_background_gpu.output_bucket_base_directory"] = f"gs://{fcBucket}/{projName}/processed/cellbender_v3_{projName}/"
+        if outputSuffix:
+            config["cellbender_remove_background.run_cellbender_remove_background_gpu.output_bucket_base_directory"] = f"{basePathProcessed}cellbender_v3_{projName}_{outputSuffix}/"
+        else:
+            config["cellbender_remove_background.run_cellbender_remove_background_gpu.output_bucket_base_directory"] = f"{basePathProcessed}cellbender_v3_{projName}/"
         if postCellrangerArc:
-            config["cellbender_remove_background.run_cellbender_remove_background_gpu.input_file_unfiltered"] = f"gs://{fcBucket}/{projName}/processed/cellranger_arc_{projName}/{row['link_id']}/raw_feature_bc_matrix.h5"
+            config["cellbender_remove_background.run_cellbender_remove_background_gpu.input_file_unfiltered"] = f"{basePathProcessed}cellranger_arc_{projName}/{row['link_id']}/raw_feature_bc_matrix.h5"
             outputFile = f"Cellbender_{row['link_id']}.json"
         else:
-            config["cellbender_remove_background.run_cellbender_remove_background_gpu.input_file_unfiltered"] = f"gs://{fcBucket}/{projName}/processed/cellranger_{projName}/{row['sampleid']}/raw_feature_bc_matrix.h5"
+            config["cellbender_remove_background.run_cellbender_remove_background_gpu.input_file_unfiltered"] = f"{basePathProcessed}cellranger_{projName}/{row['sampleid']}/raw_feature_bc_matrix.h5"
             outputFile = f"Cellbender_{row['sampleid']}.json"
         
         with open(f"./scripts/{setDate}/{outputFile}", "w") as f:
@@ -513,11 +523,9 @@ def configSetupCellbender(samplesToRun, postCellrangerArc=False, fcBucket=terraB
         
     return cbJsonsGenerated
 
-def configSetupCumulus(samplesToRun, fcBucket=terraBucket):
+def configSetupCumulus(samplesToRun, outputSuffix=False):
     '''
     samplesToRun - the main samplesheet read in as a dataframe, subsetted to only the RNA/GEX samples due to typical cellbender workflows
-    postCellrangerArc - a control for directing the path variables to the corresponding "raw_feature_bc_matrix.h5" as an out from standard Cellranger or Cellranger_arc
-    fcBucket - workspace bucket
     '''
 
     with open("./templates/cumulus_template.json") as f:
@@ -529,9 +537,19 @@ def configSetupCumulus(samplesToRun, fcBucket=terraBucket):
 
     for _, row in samplesToRun.iterrows():
         config = dict(ccJson)
-        config['cumulus.input_file'] = f"gs://{fcBucket}/{projName}/processed/cellbender_cumulus_{projName}/{row['sampleid']}/Cumulus_{row['sampleid']}.csv"
-        config['cumulus.output_directory'] = f"gs://{fcBucket}/{projName}/processed/cellbender_cumulus_{projName}/"
+        config['cumulus.input_file'] = f"{basePathProcessed}cellbender_cumulus_{projName}/{row['sampleid']}/Cumulus_{row['sampleid']}.csv"
+        if outputSuffix:
+            config['cumulus.output_directory'] = f"{basePathProcessed}cellbender_cumulus_{projName}_{outputSuffix}/"
+        else:
+            config['cumulus.output_directory'] = f"{basePathProcessed}cellbender_cumulus_{projName}/"
         config['cumulus.output_name'] = f"{row['sampleid']}"
+
+        #If values were not empty; then leave defaults, else fill in with the value in the columns
+        for key in ['percent_mito', 'min_umis', 'min_genes']:
+            val = row.get(key)
+            if pd.notna(val) and val != '':
+                config[key] = val  # override default only if valid
+
         outputFile = f"Cumulus_{row['sampleid']}.json"
         with open(f"./scripts/{setDate}/{outputFile}", "w") as f:
             json.dump(config, f, indent=2)
@@ -602,14 +620,18 @@ if __name__ == "__main__":
         countsSamplesLocation= createCountsSheet(args.modality, args.submit)
         jsonGen = configSetupCounts(countsMode=args.modality,
                                     intronStatus = args.introns,
+                                    outputSuffix = args.output,
                                     countsSampleSheetPath=countsSamplesLocation)
 
     elif args.step == "cellbender":
-        jsonGen = configSetupCellbender(masterDf, args.post_arc)
+        jsonGen = configSetupCellbender(masterDf, 
+                                        args.post_arc,
+                                        outputSuffix = args.output)
     
     elif args.step == "cumulus":
         createCumulusSheet(masterDf, runSteps = args.submit)
-        jsonGen = configSetupCumulus(masterDf)
+        jsonGen = configSetupCumulus(masterDf,
+                                     outputSuffix = args.output)
     
     #Catch function to have jsonGen be a list when submitted, else it will iterate through a string
     if isinstance(jsonGen, str):

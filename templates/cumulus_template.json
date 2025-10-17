@@ -7,7 +7,6 @@
     "cumulus.run_louvain": "false",
     "cumulus.min_umis": "400",
     "cumulus.fisher": "true",
-    "cumulus.minimum_number_of_genes": "200",
     "cumulus.run_leiden": "true",
     "cumulus.min_genes": "200",
     "cumulus.find_markers_lightgbm": "false",

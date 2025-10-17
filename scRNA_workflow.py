@@ -555,7 +555,8 @@ def scriptSteps(step, jsonGenerated, runStep=False):
 alto terra run \
     -w {terraWorkspace} \
     -m {stepDict[step]} \
-    -i JsonValue
+    -i JsonValue \
+    -no-cache
 '''
     
     scriptsGenerated = []

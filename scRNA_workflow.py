@@ -217,7 +217,7 @@ def gexAtacSplit(masterDf):
                 gexToRun.to_csv(f"./samplesheets/{setDate}/{flowcellId}_GEX_L_samplesheet.csv", index=False)
             else:
                 gexToRun = gexDf[["sampleid", "index", "index2"]]
-                getToRunL = f"{flowcellId}_GEX_samplesheet.csv"
+                gexToRunL = f"{flowcellId}_GEX_samplesheet.csv"
                 gexToRun.to_csv(f"./samplesheets/{setDate}/{flowcellId}_GEX_samplesheet.csv", index=False)
             createdSheets[flowcellId] = gexToRunL
             

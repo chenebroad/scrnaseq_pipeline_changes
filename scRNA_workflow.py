@@ -492,7 +492,7 @@ def configSetupCounts(countsMode, countsSampleSheetPath, outputSuffix=False, int
     
     return crJsonsGenerated
 
-def configSetupCellbender(samplesToRun, outputSuffix=False, postCellrangerArc=False):
+def configSetupCellbender(samplesToRun, postCellrangerArc=False, outputSuffix=False):
     '''
     samplesToRun - the main samplesheet read in as a dataframe, subsetted to only the RNA/GEX samples due to typical cellbender workflows
     postCellrangerArc - a control for directing the path variables to the corresponding "raw_feature_bc_matrix.h5" as an out from standard Cellranger or Cellranger_arc

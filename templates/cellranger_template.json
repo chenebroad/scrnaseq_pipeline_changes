@@ -6,5 +6,6 @@
     "cellranger_workflow.cellranger_version": "9.0.1",
     "cellranger_workflow.memory": "240G",
     "cellranger_workflow.output_directory": "${outputLoc}",
-    "cellranger_workflow.include_introns": "${intronsStatus}"
+    "cellranger_workflow.include_introns": "${intronsStatus}",
+    "cellranger_workflow.arc_memory": "250G"
 }

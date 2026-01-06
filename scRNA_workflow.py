@@ -43,8 +43,8 @@ masterDf = masterDf[masterDf['run_pipeline'] == True]
 if "link_id" in masterDf.columns:
     masterDf['sampleid'] = masterDf['link_id'] + "_" + masterDf['submethod']
 
-projName = list(masterDf['project'])[0]
-basePath = f"gs://{terraBucket}/{projName}"
+projName = str(list(masterDf['project'])[0]).rstrip("/").strip()
+basePath = f"gs://{terraBucket}/{projName}/"
 basePathProcessed = f"gs://{terraBucket}/{projName}/processed/"
 
 mergedIndexJson = {}
@@ -91,9 +91,9 @@ def parse_args():
                           choices=["multiome", "non-multiome", "vdj"], 
                           default="non-multiome", 
                           help="Specify modality for counts")
-    parserCr.add_argument("--no-introns",
+    parserCr.add_argument("--introns",
                           required = False,
-                          action="store_false",
+                          action="store_true",
                           help = "If wanting to include introns in cellranger calculations provide this flag.")
 
     parserCb = subparsers.add_parser("cellbender", 
@@ -206,7 +206,7 @@ def gexAtacSplit(masterDf):
             else:
                 atacToRun = atacDf[["sampleid", "index", "index2", "index3", "index4"]]
                 atacToRunL = f"{flowcellId}_ATAC_samplesheet.csv"
-                atacToRun.to_csv(f"./samplesheets/{setDate}/{atacToRunL}", index=False)
+                atacToRun.to_csv(f"./samplesheets/{setDate}/{atacToRunL}", index=   False)
             createdSheets[flowcellId] = atacToRunL
         # --- GEX ---
         if not gexDf.empty:
@@ -494,7 +494,7 @@ def configSetupCounts(countsMode, countsSampleSheetPath, outputSuffix=False, int
 
 def configSetupCellbender(samplesToRun, postCellrangerArc=False, outputSuffix=False):
     '''
-    samplesToRun - the main samplesheet read in as a dataframe, subsetted to only the RNA/GEX samples due to typical cellbender workflows
+    samplesToRun - the main samplesheet read in a   s a dataframe, subsetted to only the RNA/GEX samples due to typical cellbender workflows
     postCellrangerArc - a control for directing the path variables to the corresponding "raw_feature_bc_matrix.h5" as an out from standard Cellranger or Cellranger_arc
     outputSuffix - option for adding a suffix to the standard output path for storing multiple iterations / runs
     '''

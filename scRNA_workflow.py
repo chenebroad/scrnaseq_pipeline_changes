@@ -494,7 +494,7 @@ def configSetupCounts(countsMode, countsSampleSheetPath, outputSuffix=False, int
 
 def configSetupCellbender(samplesToRun, postCellrangerArc=False, outputSuffix=False):
     '''
-    samplesToRun - the main samplesheet read in a   s a dataframe, subsetted to only the RNA/GEX samples due to typical cellbender workflows
+    samplesToRun - the main samplesheet read in as a dataframe, subsetted to only the RNA/GEX samples due to typical cellbender workflows
     postCellrangerArc - a control for directing the path variables to the corresponding "raw_feature_bc_matrix.h5" as an out from standard Cellranger or Cellranger_arc
     outputSuffix - option for adding a suffix to the standard output path for storing multiple iterations / runs
     '''

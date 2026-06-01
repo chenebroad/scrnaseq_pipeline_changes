@@ -512,6 +512,10 @@ def configSetupCellbender(samplesToRun, postCellrangerArc=False, outputSuffix=Fa
             config["cellbender_remove_background.run_cellbender_remove_background_gpu.output_bucket_base_directory"] = f"{basePathProcessed}cellbender_v3_{projName}_{outputSuffix}/"
         else:
             config["cellbender_remove_background.run_cellbender_remove_background_gpu.output_bucket_base_directory"] = f"{basePathProcessed}cellbender_v3_{projName}/"
+        if pd.notna(row['cellbender_expected_cells']):
+            config["cellbender_remove_background.run_cellbender_remove_background_gpu.expected_cells"] = row['cellbender_expected_cells']
+        if pd.notna(row['cellbender_total_droplets']):
+            config["cellbender_remove_background.run_cellbender_remove_background_gpu.total_droplets"] = row['cellbender_total_droplets']
         if postCellrangerArc:
             config["cellbender_remove_background.run_cellbender_remove_background_gpu.input_file_unfiltered"] = f"{basePathProcessed}cellranger_arc_{projName}/{row['link_id']}/raw_feature_bc_matrix.h5"
             outputFile = f"Cellbender_{row['link_id']}.json"

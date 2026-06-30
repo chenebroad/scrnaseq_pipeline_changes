@@ -571,7 +571,7 @@ def scriptSteps(step, jsonGenerated, runStep=False):
     runStep - submitting the job to Terra, controlled by --submit, default function to not submit
     '''
     stepDict = {"bclconvert" : "kco/bcl_convert",
-                "counts" : "lilab:cumulus:Cellranger:3.1.1",
+                "counts" : "lilab:cumulus:Cellranger:master",
                 "cellbender" : "cellbender/remove-background/13",
                 "cumulus" : "cumulus/cumulus"}
     
